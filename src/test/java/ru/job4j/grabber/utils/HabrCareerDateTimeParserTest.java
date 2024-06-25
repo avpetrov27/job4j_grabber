@@ -11,7 +11,7 @@ class HabrCareerDateTimeParserTest {
     @Test
     void whenParse() {
         LocalDateTime date0 = LocalDateTime.now();
-        String text = date0.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        String text = date0.format(DateTimeFormatter.ISO_DATE_TIME);
         assertThat(new HabrCareerDateTimeParser().parse(text)).isEqualTo(date0);
     }
 }
