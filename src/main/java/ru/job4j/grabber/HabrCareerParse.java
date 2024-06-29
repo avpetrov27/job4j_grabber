@@ -6,11 +6,11 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import ru.job4j.grabber.utils.DateTimeParser;
-import ru.job4j.grabber.utils.HabrCareerDateTimeParser;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class HabrCareerParse implements Parse {
     public static final String SOURCE_LINK = "https://career.habr.com";
@@ -33,10 +33,10 @@ public class HabrCareerParse implements Parse {
             Elements rows = document.select(".vacancy-card__inner");
             rows.forEach(row -> {
                 Element titleElement = row.select(".vacancy-card__title").first();
-                Element linkElement = titleElement.child(0);
+                Element linkElement = Objects.requireNonNull(titleElement).child(0);
                 String vacancyName = titleElement.text();
                 String vacancyLink = String.format("%s%s", SOURCE_LINK, linkElement.attr("href"));
-                String time = row.select(".vacancy-card__date").first().child(0).attr("datetime");
+                String time = Objects.requireNonNull(row.select(".vacancy-card__date").first()).child(0).attr("datetime");
                 String description;
                 try {
                     description = retrieveDescription(vacancyLink);
@@ -50,12 +50,6 @@ public class HabrCareerParse implements Parse {
     }
 
     private String retrieveDescription(String link) throws IOException {
-        return Jsoup.connect(link).get().selectFirst(".vacancy-description__text").text();
-    }
-
-    public static void main(String[] args) throws IOException {
-        List<Post> list = new HabrCareerParse(new HabrCareerDateTimeParser()).list(SOURCE_LINK);
-        System.out.println(list.size());
-        System.out.println(list);
+        return Objects.requireNonNull(Jsoup.connect(link).get().selectFirst(".vacancy-description__text")).text();
     }
 }
