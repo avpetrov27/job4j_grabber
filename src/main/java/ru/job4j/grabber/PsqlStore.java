@@ -30,10 +30,7 @@ public class PsqlStore implements Store {
                      connection.prepareStatement(
                              "INSERT INTO post(name, text, link, created_date) VALUES (?, ?, ?, ?)"
                                      + " ON CONFLICT (link)"
-                                     + " DO UPDATE SET"
-                                     + " name = EXCLUDED.name,"
-                                     + " text = EXCLUDED.text,"
-                                     + " created_date = EXCLUDED.created_date",
+                                     + " DO NOTHING",
                              Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, post.getTitle());
             statement.setString(2, post.getDescription());
@@ -50,6 +47,14 @@ public class PsqlStore implements Store {
         }
     }
 
+    private Post newPost(ResultSet resultSet) throws SQLException {
+        return new Post(resultSet.getInt("id"),
+                resultSet.getString("name"),
+                resultSet.getString("link"),
+                resultSet.getString("text"),
+                resultSet.getTimestamp("created_date").toLocalDateTime());
+    }
+
     @Override
     public List<Post> getAll() {
         List<Post> result = new ArrayList<>();
@@ -58,11 +63,7 @@ public class PsqlStore implements Store {
                              "SELECT id, name, text, link, created_date FROM post")) {
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    result.add(new Post(resultSet.getInt("id"),
-                            resultSet.getString("name"),
-                            resultSet.getString("link"),
-                            resultSet.getString("text"),
-                            resultSet.getTimestamp("created_date").toLocalDateTime()));
+                    result.add(newPost(resultSet));
                 }
             }
         } catch (Exception e) {
@@ -80,11 +81,7 @@ public class PsqlStore implements Store {
             statement.setInt(1, id);
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    result = new Post(resultSet.getInt("id"),
-                            resultSet.getString("name"),
-                            resultSet.getString("link"),
-                            resultSet.getString("text"),
-                            resultSet.getTimestamp("created_date").toLocalDateTime());
+                    result = newPost(resultSet);
                 }
             }
         } catch (Exception e) {
